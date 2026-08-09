@@ -1,4 +1,26 @@
-# NohBoard
+# NohBoardColor
+
+> 当前版本：**v1.4.0** · 更新日期：**2026-08-09** · 基于 [ThoNohT/NohBoard](https://github.com/ThoNohT/NohBoard) 的教学用途分支
+
+NohBoardColor 是面向儿童编程和键位学习场景的 NohBoard 分支。当前重点是让刚刚操作过的按键更容易被找到，同时尽量保持界面简单、顺序清晰。
+
+## v1.4.0：按键渐暗
+
+本版本在 `Settings` → `Input` 中增加了 `Fade keypresses`：
+
+- `Show keypresses for at least` 必须大于 `0 ms`，否则渐暗选项会禁用。
+- 按住键盘键或鼠标键时保持完整高亮。
+- 松开后在设定时间内逐渐淡回普通状态，不再到时间后突然熄灭。
+- 未勾选时保留 NohBoard 原有行为。
+- 设置会随其他全局设置一同保存。
+
+## 项目方向
+
+本项目暂不开发彩色按钮或色相轮盘。实际讨论认为，小朋友难以仅凭颜色轮换准确判断按键先后顺序；简单渐暗更直观，也更适合当前教学目标。此前的彩色方案保存在 [`old`](old) 目录中，仅供历史参考。
+
+下一阶段计划研究窗口置顶、半透明键盘、激活按键恢复不透明，以及键盘窗口与编程 IDE 的位置切换。所有内容须先完成人工评审再实施，详见 [后续改进计划](ROADMAP.md)。
+
+## 上游项目简介
 
 NohBoard is a keyboard visualization program. I know certain applications already exist that do just this, display your keyboard on-screen. And even more probably. However, so far I have found none that were both free and easy to use. That's where this program came in, I made it to be free and easy to use, without any fancy graphics, and easily capturable (possibly with chroma key). Furthermore, it's very customizable.
 
@@ -44,7 +66,7 @@ If you want to contribute, either with code, with keyboard definitions or keyboa
 
 ## Changelog
 
-For the changelog, see the [Releases](https://github.com/ThoNohT/NohBoard/releases) page.
+See this fork's [CHANGELOG](CHANGELOG.md) for NohBoardColor updates. For changes inherited from the original project, see the upstream [Releases](https://github.com/ThoNohT/NohBoard/releases) page.
 
 ## Full Documentation
 

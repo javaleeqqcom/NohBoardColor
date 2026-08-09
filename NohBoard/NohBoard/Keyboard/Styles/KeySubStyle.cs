@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace ThoNohT.NohBoard.Keyboard.Styles
 {
     using System.Drawing;
+    using System.Drawing.Imaging;
     using System.Runtime.Serialization;
     using Extra;
 
@@ -101,7 +102,22 @@ namespace ThoNohT.NohBoard.Keyboard.Styles
         {
             return this.BackgroundImageFileName == null || !FileHelper.StyleImageExists(this.BackgroundImageFileName)
                 ? new SolidBrush(this.Background)
-                : this.BrushFromImage(boundingBox, this.BackgroundImageFileName);
+                : this.BrushFromImage(boundingBox, this.BackgroundImageFileName, 1);
+        }
+
+        /// <summary>
+        /// Returns the appropriate background brush with the specified opacity.
+        /// </summary>
+        /// <param name="boundingBox">The bounding box of the key.</param>
+        /// <param name="opacity">The opacity of the returned brush.</param>
+        /// <returns>The background brush.</returns>
+        public Brush GetBackgroundBrush(Rectangle boundingBox, float opacity)
+        {
+            opacity = System.Math.Max(0, System.Math.Min(1, opacity));
+
+            return this.BackgroundImageFileName == null || !FileHelper.StyleImageExists(this.BackgroundImageFileName)
+                ? new SolidBrush(Color.FromArgb((int)(255 * opacity), (Color)this.Background))
+                : this.BrushFromImage(boundingBox, this.BackgroundImageFileName, opacity);
         }
 
         /// <summary>
@@ -111,14 +127,28 @@ namespace ThoNohT.NohBoard.Keyboard.Styles
         /// <param name="fileName">The filename to load the image from. This filename should be relative to the images
         /// folder of the current style.</param>
         /// <returns>The brush created from the image.</returns>
-        private Brush BrushFromImage(Rectangle boundingBox, string fileName)
+        private Brush BrushFromImage(Rectangle boundingBox, string fileName, float opacity)
         {
             var img = ImageCache.Get(fileName);
             var gu = GraphicsUnit.Pixel;
             var imgBb = img.GetBounds(ref gu);
 
             // Create a texture brush from the image.
-            var tex = new TextureBrush(img, imgBb);
+            TextureBrush tex;
+            if (opacity >= 1)
+            {
+                tex = new TextureBrush(img, imgBb);
+            }
+            else
+            {
+                using (var attributes = new ImageAttributes())
+                {
+                    var colorMatrix = new ColorMatrix { Matrix33 = opacity };
+                    attributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                    tex = new TextureBrush(img, imgBb, attributes);
+                }
+            }
+
             tex.TranslateTransform(boundingBox.Left, boundingBox.Top);
             tex.ScaleTransform(boundingBox.Width / imgBb.Width, boundingBox.Height / imgBb.Height);
 

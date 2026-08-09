@@ -468,6 +468,8 @@ namespace ThoNohT.NohBoard.Forms
             HookManager.TrapToggleKeyCode = GlobalSettings.Settings.TrapToggleKeyCode;
             HookManager.ScrollHold = GlobalSettings.Settings.ScrollHold;
             HookManager.PressHold = GlobalSettings.Settings.PressHold;
+            HookManager.FadeKeyPresses = GlobalSettings.Settings.FadeKeyPresses
+                && GlobalSettings.Settings.PressHold > 0;
 
             var title = GlobalSettings.Settings.WindowTitle;
             this.Text = string.IsNullOrWhiteSpace(title) ? $"NohBoard {Version.Get}" : title;
@@ -599,10 +601,14 @@ namespace ThoNohT.NohBoard.Forms
                 new Rectangle(0, 0, GlobalSettings.CurrentDefinition.Width, GlobalSettings.CurrentDefinition.Height));
 
             // Render all keys.
-            KeyboardState.CheckKeyHolds(GlobalSettings.Settings.PressHold);
+            KeyboardState.CheckKeyHolds(
+                GlobalSettings.Settings.PressHold,
+                GlobalSettings.Settings.FadeKeyPresses);
             var kbKeys = KeyboardState.PressedKeys;
             var mouseKeys = MouseState.PressedKeys.Select(k => (int)k).ToList();
-            MouseState.CheckKeyHolds(GlobalSettings.Settings.PressHold);
+            MouseState.CheckKeyHolds(
+                GlobalSettings.Settings.PressHold,
+                GlobalSettings.Settings.FadeKeyPresses);
             MouseState.CheckScrollAndMovement();
             var scrollCounts = MouseState.ScrollCounts;
             var allDefs = GlobalSettings.CurrentDefinition.Elements;
@@ -663,15 +669,30 @@ namespace ThoNohT.NohBoard.Forms
                         && d.KeyCodes.All(kbKeys.Contains)
                         && d.KeyCodes.ContainsAll(kkDef.KeyCodes))) pressed = false;
 
+                var pressedOpacity = pressed
+                    ? kkDef.KeyCodes.Min(k => KeyboardState.GetKeyPressOpacity(
+                        k,
+                        GlobalSettings.Settings.PressHold,
+                        GlobalSettings.Settings.FadeKeyPresses))
+                    : 0;
+
                 if (!pressed && !alwaysRender) return;
 
-                kkDef.Render(g, pressed, KeyboardState.ShiftDown, KeyboardState.CapsActive);
+                kkDef.Render(g, pressedOpacity, KeyboardState.ShiftDown, KeyboardState.CapsActive);
             }
             if (def is MouseKeyDefinition mkDef)
             {
                 var pressed = mouseKeys.Contains(mkDef.KeyCodes.Single());
                 if (pressed || alwaysRender)
-                    mkDef.Render(g, pressed, KeyboardState.ShiftDown, KeyboardState.CapsActive);
+                {
+                    var pressedOpacity = pressed
+                        ? MouseState.GetKeyPressOpacity(
+                            (MouseKeyCode)mkDef.KeyCodes.Single(),
+                            GlobalSettings.Settings.PressHold,
+                            GlobalSettings.Settings.FadeKeyPresses)
+                        : 0;
+                    mkDef.Render(g, pressedOpacity, KeyboardState.ShiftDown, KeyboardState.CapsActive);
+                }
             }
             if (def is MouseScrollDefinition msDef)
             {
@@ -698,8 +719,12 @@ namespace ThoNohT.NohBoard.Forms
         /// </summary>
         private void KeyCheckTimer_Tick(object sender, EventArgs e)
         {
-            MouseState.CheckKeys(GlobalSettings.Settings.PressHold);
-            KeyboardState.CheckKeys(GlobalSettings.Settings.PressHold);
+            MouseState.CheckKeys(
+                GlobalSettings.Settings.PressHold,
+                GlobalSettings.Settings.FadeKeyPresses);
+            KeyboardState.CheckKeys(
+                GlobalSettings.Settings.PressHold,
+                GlobalSettings.Settings.FadeKeyPresses);
         }
 
         #endregion Rendering

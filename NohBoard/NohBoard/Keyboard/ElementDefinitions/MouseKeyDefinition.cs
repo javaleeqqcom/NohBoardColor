@@ -62,6 +62,21 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
         /// <param name="capsLock">A value indicating whether caps lock is pressed during the render.</param>
         public void Render(Graphics g, bool pressed, bool shift, bool capsLock)
         {
+            this.Render(g, pressed ? 1 : 0, shift, capsLock);
+        }
+
+        /// <summary>
+        /// Renders the key with a partially visible pressed state.
+        /// </summary>
+        /// <param name="g">The GDI+ surface to render on.</param>
+        /// <param name="pressedOpacity">The opacity of the pressed state from zero to one.</param>
+        /// <param name="shift">A value indicating whether shift is pressed during the render.</param>
+        /// <param name="capsLock">A value indicating whether caps lock is pressed during the render.</param>
+        public void Render(Graphics g, float pressedOpacity, bool shift, bool capsLock)
+        {
+            pressedOpacity = Math.Max(0, Math.Min(1, pressedOpacity));
+            var pressed = pressedOpacity > 0;
+            var opacity = pressed ? pressedOpacity : 1;
             var style = GlobalSettings.CurrentStyle.TryGetElementStyle<KeyStyle>(this.Id)
                             ?? GlobalSettings.CurrentStyle.DefaultKeyStyle;
             var defaultStyle = GlobalSettings.CurrentStyle.DefaultKeyStyle;
@@ -73,19 +88,23 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
                 this.TextPosition.Y - (int)(txtSize.Height / 2));
 
             // Draw the background
-            var backgroundBrush = this.GetBackgroundBrush(subStyle, pressed);
+            var fadingBrush = pressed && opacity < 1;
+            var backgroundBrush = fadingBrush
+                ? subStyle.GetBackgroundBrush(this.GetBoundingBox(), opacity)
+                : this.GetBackgroundBrush(subStyle, pressed);
             g.FillPolygon(backgroundBrush, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
+            if (fadingBrush) backgroundBrush.Dispose();
 
             // Draw the text
             g.SetClip(this.GetBoundingBox());
-            g.DrawString(this.Text, subStyle.Font, new SolidBrush(subStyle.Text), (Point)txtPoint);
+            using (var textBrush = new SolidBrush(WithOpacity(subStyle.Text, opacity)))
+                g.DrawString(this.Text, subStyle.Font, textBrush, (Point)txtPoint);
             g.ResetClip();
 
             // Draw the outline.
             if (subStyle.ShowOutline)
-                g.DrawPolygon(
-                    new Pen(subStyle.Outline, subStyle.OutlineWidth),
-                    this.Boundaries.ConvertAll<Point>(x => x).ToArray());
+                using (var outlinePen = new Pen(WithOpacity(subStyle.Outline, opacity), subStyle.OutlineWidth))
+                    g.DrawPolygon(outlinePen, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
         }
 
         /// <summary>

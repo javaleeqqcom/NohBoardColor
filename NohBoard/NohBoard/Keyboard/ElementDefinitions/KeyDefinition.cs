@@ -410,6 +410,18 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
         }
 
         /// <summary>
+        /// Applies an opacity to a serializable color.
+        /// </summary>
+        /// <param name="color">The source color.</param>
+        /// <param name="opacity">The opacity from zero to one.</param>
+        /// <returns>The color with the requested alpha value.</returns>
+        protected static Color WithOpacity(SerializableColor color, float opacity)
+        {
+            opacity = Math.Max(0, Math.Min(1, opacity));
+            return Color.FromArgb((int)(255 * opacity), (Color)color);
+        }
+
+        /// <summary>
         /// Returns the bounding box of this element.
         /// </summary>
         /// <returns>A rectangle representing the bounding box of the element.</returns>

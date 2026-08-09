@@ -134,30 +134,15 @@ namespace ThoNohT.NohBoard.Hooking
         /// Checks the state of all keys and removes the ones that are no longer pressed from the list of pressed keys.
         /// </summary>
         /// <param name="hold">The minimum time to hold keys.</param>
-        public static void CheckKeys(int hold)
+        public static void CheckKeys(int hold, bool fade = false)
         {
             lock (pressedKeys)
             {
                 if (!pressedKeys.Any()) return;
 
-                var time = keyHoldStopwatch.ElapsedMilliseconds;
-
                 foreach (var key in pressedKeys.Where(t => KeyIsUp(t.Key)).Select(t => t.Key).ToList())
                 {
-                    var pressed = pressedKeys[key];
-
-                    if (pressed.startTime + hold < time)
-                    {
-                        pressedKeys.Remove(key);
-                    }
-                    else
-                    {
-                        pressed.removed = true;
-                        pressedKeys[key] = pressed;
-                    }
-
-                    // Always update to keep checking whether to remove the key on the next render cycle.
-                    updated = true;
+                    ReleasePressedElement(key, hold, fade);
                 }
 
                 TryStopStopwatch();
@@ -261,31 +246,9 @@ namespace ThoNohT.NohBoard.Hooking
         /// </summary>
         /// <param name="keyCode">The keycode to remove.</param>
         /// <param name="hold">The minimum time to hold keys.</param>
-        public static void RemovePressedElement(MouseKeyCode keyCode, int hold)
+        public static void RemovePressedElement(MouseKeyCode keyCode, int hold, bool fade = false)
         {
-            lock (pressedKeys)
-            {
-                if (!pressedKeys.ContainsKey(keyCode)) return;
-
-                var time = keyHoldStopwatch.ElapsedMilliseconds;
-
-                var pressed = pressedKeys[keyCode];
-
-                if (pressed.startTime + hold < time)
-                {
-                    pressedKeys.Remove(keyCode);
-                }
-                else
-                {
-                    pressed.removed = true;
-                    pressedKeys[keyCode] = pressed;
-                }
-
-                // Always update to keep checking whether to remove the key on the next render cycle.
-                updated = true;
-
-                TryStopStopwatch();
-            }
+            ReleasePressedElement(keyCode, hold, fade);
         }
 
         /// <summary>

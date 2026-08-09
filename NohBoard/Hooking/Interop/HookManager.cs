@@ -122,7 +122,7 @@ namespace ThoNohT.NohBoard.Hooking.Interop
 
                     break;
                 case WM_LBUTTONUP:
-                    MouseState.RemovePressedElement(MouseKeyCode.LeftButton, PressHold);
+                    MouseState.RemovePressedElement(MouseKeyCode.LeftButton, PressHold, FadeKeyPresses);
 
                     break;
                 case WM_RBUTTONDOWN:
@@ -130,7 +130,7 @@ namespace ThoNohT.NohBoard.Hooking.Interop
 
                     break;
                 case WM_RBUTTONUP:
-                    MouseState.RemovePressedElement(MouseKeyCode.RightButton, PressHold);
+                    MouseState.RemovePressedElement(MouseKeyCode.RightButton, PressHold, FadeKeyPresses);
                     break;
 
                 case WM_MBUTTONDOWN:
@@ -138,7 +138,7 @@ namespace ThoNohT.NohBoard.Hooking.Interop
                     break;
 
                 case WM_MBUTTONUP:
-                    MouseState.RemovePressedElement(MouseKeyCode.MiddleButton, PressHold);
+                    MouseState.RemovePressedElement(MouseKeyCode.MiddleButton, PressHold, FadeKeyPresses);
                     break;
 
                 case WM_MOUSEWHEEL:
@@ -172,9 +172,9 @@ namespace ThoNohT.NohBoard.Hooking.Interop
                     subCode = HiWord(info.MouseData);
 
                     if (subCode == XBUTTON1)
-                        MouseState.RemovePressedElement(MouseKeyCode.X1Button, PressHold);
+                        MouseState.RemovePressedElement(MouseKeyCode.X1Button, PressHold, FadeKeyPresses);
                     if (subCode == XBUTTON2)
-                        MouseState.RemovePressedElement(MouseKeyCode.X2Button, PressHold);
+                        MouseState.RemovePressedElement(MouseKeyCode.X2Button, PressHold, FadeKeyPresses);
 
                     break;
                 case WM_MOUSEMOVE:
@@ -241,11 +241,11 @@ namespace ThoNohT.NohBoard.Hooking.Interop
             {
                 case WM_KEYDOWN:
                 case WM_SYSKEYDOWN:
-                    KeyboardState.AddPressedElement(code, PressHold);
+                    KeyboardState.AddPressedElement(code, PressHold, FadeKeyPresses);
                     break;
                 case WM_KEYUP:
                 case WM_SYSKEYUP:
-                    KeyboardState.RemovePressedElement(code, PressHold);
+                    KeyboardState.RemovePressedElement(code, PressHold, FadeKeyPresses);
 
                     // Toggle the mouse trap.
                     if (code == TrapToggleKeyCode) trapEnabled = !trapEnabled;

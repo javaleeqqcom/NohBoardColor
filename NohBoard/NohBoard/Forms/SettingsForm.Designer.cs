@@ -54,6 +54,7 @@ namespace ThoNohT.NohBoard.Forms
             this.chkTrapMouse = new System.Windows.Forms.CheckBox();
             this.lblTrapping = new System.Windows.Forms.Label();
             this.InputGroup = new System.Windows.Forms.GroupBox();
+            this.chkFadeKeyPresses = new System.Windows.Forms.CheckBox();
             this.lblPressHold = new System.Windows.Forms.Label();
             this.udPressHold = new System.Windows.Forms.NumericUpDown();
             this.lblPresHoldDuration = new System.Windows.Forms.Label();
@@ -152,6 +153,7 @@ namespace ThoNohT.NohBoard.Forms
             // 
             // InputGroup
             // 
+            this.InputGroup.Controls.Add(this.chkFadeKeyPresses);
             this.InputGroup.Controls.Add(this.lblPressHold);
             this.InputGroup.Controls.Add(this.udPressHold);
             this.InputGroup.Controls.Add(this.lblPresHoldDuration);
@@ -166,6 +168,16 @@ namespace ThoNohT.NohBoard.Forms
             this.InputGroup.TabIndex = 2;
             this.InputGroup.TabStop = false;
             this.InputGroup.Text = "Input";
+            //
+            // chkFadeKeyPresses
+            //
+            this.chkFadeKeyPresses.AutoSize = true;
+            this.chkFadeKeyPresses.Location = new System.Drawing.Point(10, 153);
+            this.chkFadeKeyPresses.Name = "chkFadeKeyPresses";
+            this.chkFadeKeyPresses.Size = new System.Drawing.Size(121, 17);
+            this.chkFadeKeyPresses.TabIndex = 13;
+            this.chkFadeKeyPresses.Text = "Fade keypresses";
+            this.chkFadeKeyPresses.UseVisualStyleBackColor = true;
             // 
             // lblPressHold
             // 
@@ -187,6 +199,7 @@ namespace ThoNohT.NohBoard.Forms
             this.udPressHold.Name = "udPressHold";
             this.udPressHold.Size = new System.Drawing.Size(49, 20);
             this.udPressHold.TabIndex = 11;
+            this.udPressHold.ValueChanged += new System.EventHandler(this.udPressHold_ValueChanged);
             // 
             // lblPresHoldDuration
             // 
@@ -456,5 +469,6 @@ namespace ThoNohT.NohBoard.Forms
         private Label lblPresHoldDuration;
         private NumericUpDown udPressHold;
         private Label lblPressHold;
+        private CheckBox chkFadeKeyPresses;
     }
 }

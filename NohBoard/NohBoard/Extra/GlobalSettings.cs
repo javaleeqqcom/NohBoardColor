@@ -115,6 +115,13 @@ namespace ThoNohT.NohBoard.Extra
         public int PressHold { get; set; }
 
         /// <summary>
+        /// Whether released key presses gradually fade during <see cref="PressHold"/> instead of disappearing
+        /// abruptly.
+        /// </summary>
+        [DataMember]
+        public bool FadeKeyPresses { get; set; }
+
+        /// <summary>
         /// The time in milliseconds between which the keyboard is updated and rendered again.
         /// Minimum: 5ms (200fps), maximum: 60s, default: 33ms (30fps).
         /// </summary>

@@ -41,6 +41,11 @@ namespace ThoNohT.NohBoard.Hooking
             /// A value indicating whether the press should be removed, once the hold time is elapsed.
             /// </summary>
             public bool removed { get; set; }
+
+            /// <summary>
+            /// The time in milliseconds when the key was released.
+            /// </summary>
+            public long releaseTime { get; set; }
         }
 
         /// <summary>
@@ -85,7 +90,7 @@ namespace ThoNohT.NohBoard.Hooking
         /// Checks all key holds, and any holds that are exceeded are removed from the pressed keys list.
         /// </summary>
         /// <param name="hold">The minimum time to hold keys.</param>
-        public static void CheckKeyHolds(int hold)
+        public static void CheckKeyHolds(int hold, bool fade = false)
         {
             lock (pressedKeys)
             {
@@ -99,12 +104,69 @@ namespace ThoNohT.NohBoard.Hooking
 
                 foreach (var key in pressedKeys
                     .Where(t => t.Value.removed)
-                    .Where(t => t.Value.startTime + hold < time)
+                    .Where(t => (fade && hold > 0 ? t.Value.releaseTime : t.Value.startTime) + hold < time)
                     .Select(t => t.Key).ToList())
                 {
                     pressedKeys.Remove(key);
                 }
 
+                TryStopStopwatch();
+            }
+        }
+
+        /// <summary>
+        /// Returns the current opacity of the pressed state for a key.
+        /// </summary>
+        /// <param name="key">The key for which to retrieve the opacity.</param>
+        /// <param name="hold">The fade duration in milliseconds.</param>
+        /// <param name="fade">Whether released keys should fade.</param>
+        /// <returns>One while pressed, a value decreasing to zero while fading, or zero when inactive.</returns>
+        public static float GetKeyPressOpacity(T key, int hold, bool fade)
+        {
+            lock (pressedKeys)
+            {
+                if (!pressedKeys.TryGetValue(key, out var pressed)) return 0;
+                if (!fade || hold <= 0 || !pressed.removed) return 1;
+
+                var elapsed = keyHoldStopwatch.ElapsedMilliseconds - pressed.releaseTime;
+                return System.Math.Max(0, System.Math.Min(1, 1 - (float)elapsed / hold));
+            }
+        }
+
+        /// <summary>
+        /// Releases a pressed key immediately, after the original minimum hold, or by fading it from this moment.
+        /// </summary>
+        /// <param name="key">The key to release.</param>
+        /// <param name="hold">The minimum hold or fade duration in milliseconds.</param>
+        /// <param name="fade">Whether the released key should fade.</param>
+        protected static void ReleasePressedElement(T key, int hold, bool fade)
+        {
+            lock (pressedKeys)
+            {
+                if (!pressedKeys.TryGetValue(key, out var pressed)) return;
+
+                var time = keyHoldStopwatch.ElapsedMilliseconds;
+
+                if (fade && hold > 0)
+                {
+                    if (!pressed.removed)
+                        pressed.releaseTime = time;
+
+                    pressed.removed = true;
+                    pressedKeys[key] = pressed;
+                }
+                else if (pressed.startTime + hold < time)
+                {
+                    pressedKeys.Remove(key);
+                }
+                else
+                {
+                    pressed.removed = true;
+                    pressedKeys[key] = pressed;
+                }
+
+                // Always update to keep checking whether to remove or fade the key on the next render cycle.
+                updated = true;
                 TryStopStopwatch();
             }
         }

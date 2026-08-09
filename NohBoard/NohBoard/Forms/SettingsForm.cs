@@ -86,6 +86,9 @@ namespace ThoNohT.NohBoard.Forms
             this.txtTitle.Text = GlobalSettings.Settings.WindowTitle;
 
             this.udPressHold.Value = GlobalSettings.Settings.PressHold;
+            this.chkFadeKeyPresses.Checked = GlobalSettings.Settings.FadeKeyPresses
+                && this.udPressHold.Value > 0;
+            this.UpdateFadeKeyPressesEnabledState();
 
             this.SetToolTips();
         }
@@ -138,7 +141,12 @@ namespace ThoNohT.NohBoard.Forms
                 "Fill in if you want a custom window title." + nl
                 + "If left empty, the default window title of \"NohBoard + version number\" will be shown.");
 
-            tooltip.SetToolTip(this.udPressHold, "TODO: Tooltip about holding presses.");
+            tooltip.SetToolTip(
+                this.udPressHold,
+                "The minimum time to show a keypress. When fading is enabled, this is the fade duration after release.");
+            tooltip.SetToolTip(
+                this.chkFadeKeyPresses,
+                "Fade a highlighted keyboard or mouse button back to its normal state after it is released.");
         }
 
         /// <summary>
@@ -170,6 +178,8 @@ namespace ThoNohT.NohBoard.Forms
             GlobalSettings.Settings.WindowTitle = this.txtTitle.Text;
 
             GlobalSettings.Settings.PressHold = (int)this.udPressHold.Value;
+            GlobalSettings.Settings.FadeKeyPresses = GlobalSettings.Settings.PressHold > 0
+                && this.chkFadeKeyPresses.Checked;
 
             GlobalSettings.Save();
 
@@ -211,6 +221,24 @@ namespace ThoNohT.NohBoard.Forms
         {
             this.chkFollowShiftCapsInsensitive.Enabled = !this.rdbFollowKeystate.Checked;
             this.chkFollowShiftCapsSensitive.Enabled = !this.rdbFollowKeystate.Checked;
+        }
+
+        /// <summary>
+        /// Enables fading only when a non-zero key press hold time is configured.
+        /// </summary>
+        private void udPressHold_ValueChanged(object sender, EventArgs e)
+        {
+            this.UpdateFadeKeyPressesEnabledState();
+        }
+
+        /// <summary>
+        /// Updates the enabled state of the key press fading option.
+        /// </summary>
+        private void UpdateFadeKeyPressesEnabledState()
+        {
+            this.chkFadeKeyPresses.Enabled = this.udPressHold.Value > 0;
+            if (!this.chkFadeKeyPresses.Enabled)
+                this.chkFadeKeyPresses.Checked = false;
         }
     }
 }

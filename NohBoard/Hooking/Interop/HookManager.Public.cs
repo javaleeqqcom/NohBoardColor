@@ -63,6 +63,11 @@ namespace ThoNohT.NohBoard.Hooking.Interop
         /// </summary>
         public static int PressHold { get; set; } = 0;
 
+        /// <summary>
+        /// Whether released key presses fade out during <see cref="PressHold"/>.
+        /// </summary>
+        public static bool FadeKeyPresses { get; set; }
+
         #endregion Properties
 
         #region Methods
