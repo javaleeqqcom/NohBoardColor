@@ -28,6 +28,12 @@ namespace ThoNohT.NohBoard.Hooking
     public class KeyboardState : StateBase<int>
     {
         /// <summary>
+        /// Keys that were newly pressed while a physical Shift key was held. They retain their shifted label until
+        /// their own hold/fade lifetime ends, even after Shift itself is released.
+        /// </summary>
+        private static readonly HashSet<int> shiftStateKeys = new HashSet<int>();
+
+        /// <summary>
         /// A dictionary mapping key codes to the key codes of the state keys they update.
         /// </summary>
         private static Dictionary<int, int> StateKeys = new Dictionary<int, int>
@@ -55,7 +61,11 @@ namespace ThoNohT.NohBoard.Hooking
         /// </summary>
         public static bool ShiftDown
         {
-            get { lock (pressedKeys) return pressedKeys.ContainsKey(VK_LSHIFT) || pressedKeys.ContainsKey(VK_RSHIFT); }
+            get
+            {
+                lock (pressedKeys)
+                    return IsPhysicallyPressed(VK_LSHIFT) || IsPhysicallyPressed(VK_RSHIFT);
+            }
         }
 
         /// <summary>
@@ -80,6 +90,46 @@ namespace ThoNohT.NohBoard.Hooking
         public static bool CapsActive => CheckStateKey(VK_CAPITAL);
 
         /// <summary>
+        /// Returns physically held keyboard keys, excluding logical state indicators such as Caps Lock.
+        /// </summary>
+        public static IReadOnlyList<int> PhysicallyPressedKeys
+        {
+            get
+            {
+                lock (pressedKeys)
+                    return pressedKeys
+                        .Where(k => !k.Value.removed && !StateKeys.Values.Contains(k.Key))
+                        .Select(k => k.Key)
+                        .ToList()
+                        .AsReadOnly();
+            }
+        }
+
+        /// <summary>
+        /// Returns keys whose shifted label should remain visible after physical Shift is released.
+        /// </summary>
+        public static IReadOnlyList<int> ShiftStateKeys
+        {
+            get
+            {
+                lock (pressedKeys)
+                {
+                    shiftStateKeys.RemoveWhere(key => !pressedKeys.ContainsKey(key));
+                    return shiftStateKeys.ToList().AsReadOnly();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns whether a key should retain its shifted label after physical Shift is released.
+        /// </summary>
+        public static bool IsShiftStateKey(int keyCode)
+        {
+            lock (pressedKeys)
+                return pressedKeys.ContainsKey(keyCode) && shiftStateKeys.Contains(keyCode);
+        }
+
+        /// <summary>
         /// Checks the state of all keys and removes the ones that are no longer pressed from the list of pressed keys.
         /// </summary>
         /// <param name="hold">The minimum time to hold keys.</param>
@@ -91,7 +141,7 @@ namespace ThoNohT.NohBoard.Hooking
 
                 foreach (var key in pressedKeys.Where(t => KeyIsUp(t.Key)).Select(t => t.Key).ToList())
                 {
-                    ReleasePressedElement(key, hold, fade);
+                    RemovePressedElement(key, hold, fade);
                 }
 
                 TryStopStopwatch();
@@ -110,6 +160,18 @@ namespace ThoNohT.NohBoard.Hooking
                 EnsureStopwatchRunning();
 
                 var time = keyHoldStopwatch.ElapsedMilliseconds;
+
+                var alreadyPhysicallyPressed = pressedKeys.TryGetValue(keyCode, out var existingPress)
+                    && !existingPress.removed;
+                if (!alreadyPhysicallyPressed
+                    && !IsShiftKey(keyCode)
+                    && !StateKeys.Values.Contains(keyCode))
+                {
+                    if (IsPhysicallyPressed(VK_LSHIFT) || IsPhysicallyPressed(VK_RSHIFT))
+                        shiftStateKeys.Add(keyCode);
+                    else
+                        shiftStateKeys.Remove(keyCode);
+                }
 
                 TryToggleStateKey(keyCode, hold, fade);
 
@@ -163,7 +225,34 @@ namespace ThoNohT.NohBoard.Hooking
         /// <param name="hold">The minimum time to hold keys.</param>
         public static void RemovePressedElement(int keyCode, int hold, bool fade = false)
         {
+            if (IsShiftKey(keyCode))
+            {
+                lock (pressedKeys)
+                {
+                    if (pressedKeys.Remove(keyCode)) updated = true;
+                    TryStopStopwatch();
+                }
+
+                return;
+            }
+
             ReleasePressedElement(keyCode, hold, fade);
+        }
+
+        /// <summary>
+        /// Returns whether a tracked key is still physically down rather than retained for hold/fade rendering.
+        /// </summary>
+        private static bool IsPhysicallyPressed(int keyCode)
+        {
+            return pressedKeys.TryGetValue(keyCode, out var pressed) && !pressed.removed;
+        }
+
+        /// <summary>
+        /// Returns whether a key code represents either physical Shift key.
+        /// </summary>
+        private static bool IsShiftKey(int keyCode)
+        {
+            return keyCode == VK_LSHIFT || keyCode == VK_RSHIFT;
         }
 
         /// <summary>

@@ -42,6 +42,27 @@ namespace ThoNohT.NohBoard.Forms
         private int trapToggleKey;
 
         /// <summary>
+        /// Controls for configuring the inactive keyboard window appearance.
+        /// </summary>
+        private GroupBox windowAppearanceGroup;
+        private CheckBox chkDimInactiveWindow;
+        private Label lblInactiveOpacity;
+        private NumericUpDown udInactiveOpacity;
+        private Label lblOpacityPercent;
+        private Label lblInactiveKeyOpacity;
+        private NumericUpDown udInactiveKeyOpacity;
+        private Label lblKeyOpacityPercent;
+        private Label lblKeyPressOpacity;
+        private RadioButton rdbPressedKeyOpaque;
+        private RadioButton rdbAllKeysOpaque;
+        private Label lblKeyFontScale;
+        private NumericUpDown udKeyFontScale;
+        private Label lblKeyFontScalePercent;
+        private GroupBox keyLabelModeGroup;
+        private RadioButton rdbKeyboardKeyCaps;
+        private RadioButton rdbOriginalKeyLabels;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SettingsForm" /> class.
         /// </summary>
         public SettingsForm()
@@ -84,6 +105,17 @@ namespace ThoNohT.NohBoard.Forms
             this.chkMouseFromCenter.Checked = GlobalSettings.Settings.MouseFromCenter;
 
             this.txtTitle.Text = GlobalSettings.Settings.WindowTitle;
+            this.udKeyFontScale.Value = GlobalSettings.Settings.KeyFontScalePercent;
+            this.rdbKeyboardKeyCaps.Checked = GlobalSettings.Settings.DualStateKeyLabels
+                == DualStateLabelMode.KeyboardKeyCaps;
+            this.rdbOriginalKeyLabels.Checked = !this.rdbKeyboardKeyCaps.Checked;
+
+            this.chkDimInactiveWindow.Checked = GlobalSettings.Settings.DimInactiveWindow;
+            this.udInactiveOpacity.Value = GlobalSettings.Settings.InactiveOpacityPercent;
+            this.udInactiveKeyOpacity.Value = GlobalSettings.Settings.InactiveKeyOpacityPercent;
+            this.rdbAllKeysOpaque.Checked = GlobalSettings.Settings.MakeAllKeysOpaqueOnPress;
+            this.rdbPressedKeyOpaque.Checked = !this.rdbAllKeysOpaque.Checked;
+            this.UpdateWindowAppearanceControlsEnabledState();
 
             this.udPressHold.Value = GlobalSettings.Settings.PressHold;
             this.chkFadeKeyPresses.Checked = GlobalSettings.Settings.FadeKeyPresses
@@ -140,6 +172,16 @@ namespace ThoNohT.NohBoard.Forms
                 this.txtTitle,
                 "Fill in if you want a custom window title." + nl
                 + "If left empty, the default window title of \"NohBoard + version number\" will be shown.");
+            tooltip.SetToolTip(
+                this.udKeyFontScale,
+                "Scale every key label from 100% to 300%. The default teaching-friendly value is 130%.");
+            tooltip.SetToolTip(
+                this.rdbKeyboardKeyCaps,
+                "Show both labels on idle symbol keys like a physical keyboard cap. When pressed, show only " + nl
+                + "the activated label without moving it, so its Shift state remains clear.");
+            tooltip.SetToolTip(
+                this.rdbOriginalKeyLabels,
+                "Use the original NohBoard layout: always show one centered label and switch it with Shift.");
 
             tooltip.SetToolTip(
                 this.udPressHold,
@@ -147,6 +189,21 @@ namespace ThoNohT.NohBoard.Forms
             tooltip.SetToolTip(
                 this.chkFadeKeyPresses,
                 "Fade a highlighted keyboard or mouse button back to its normal state after it is released.");
+            tooltip.SetToolTip(
+                this.chkDimInactiveWindow,
+                "Make the keyboard translucent and hide its title bar while the mouse is outside the window.");
+            tooltip.SetToolTip(
+                this.udInactiveOpacity,
+                "The keyboard background opacity while the mouse is outside it.");
+            tooltip.SetToolTip(
+                this.udInactiveKeyOpacity,
+                "The key-cap opacity while the mouse is outside the window. Key labels remain fully opaque.");
+            tooltip.SetToolTip(
+                this.rdbPressedKeyOpaque,
+                "Keep the translucent window and draw physically held keys in a separate opaque overlay.");
+            tooltip.SetToolTip(
+                this.rdbAllKeysOpaque,
+                "Make the entire keyboard window opaque while any key is physically held.");
         }
 
         /// <summary>
@@ -176,6 +233,14 @@ namespace ThoNohT.NohBoard.Forms
             MouseState.SetMouseFromCenter(GlobalSettings.Settings.MouseFromCenter, Screen.AllScreens.Select(x => (x.Bounds, getCenter(x.Bounds))).ToList());
 
             GlobalSettings.Settings.WindowTitle = this.txtTitle.Text;
+            GlobalSettings.Settings.KeyFontScalePercent = (int)this.udKeyFontScale.Value;
+            GlobalSettings.Settings.DualStateKeyLabels = this.rdbKeyboardKeyCaps.Checked
+                ? DualStateLabelMode.KeyboardKeyCaps
+                : DualStateLabelMode.OriginalNohBoard;
+            GlobalSettings.Settings.DimInactiveWindow = this.chkDimInactiveWindow.Checked;
+            GlobalSettings.Settings.InactiveOpacityPercent = (int)this.udInactiveOpacity.Value;
+            GlobalSettings.Settings.InactiveKeyOpacityPercent = (int)this.udInactiveKeyOpacity.Value;
+            GlobalSettings.Settings.MakeAllKeysOpaqueOnPress = this.rdbAllKeysOpaque.Checked;
 
             GlobalSettings.Settings.PressHold = (int)this.udPressHold.Value;
             GlobalSettings.Settings.FadeKeyPresses = GlobalSettings.Settings.PressHold > 0
@@ -232,6 +297,14 @@ namespace ThoNohT.NohBoard.Forms
         }
 
         /// <summary>
+        /// Enables or disables the inactive-window detail controls with their parent option.
+        /// </summary>
+        private void chkDimInactiveWindow_CheckedChanged(object sender, EventArgs e)
+        {
+            this.UpdateWindowAppearanceControlsEnabledState();
+        }
+
+        /// <summary>
         /// Updates the enabled state of the key press fading option.
         /// </summary>
         private void UpdateFadeKeyPressesEnabledState()
@@ -239,6 +312,23 @@ namespace ThoNohT.NohBoard.Forms
             this.chkFadeKeyPresses.Enabled = this.udPressHold.Value > 0;
             if (!this.chkFadeKeyPresses.Enabled)
                 this.chkFadeKeyPresses.Checked = false;
+        }
+
+        /// <summary>
+        /// Enables transparency details only when the inactive window effect is enabled.
+        /// </summary>
+        private void UpdateWindowAppearanceControlsEnabledState()
+        {
+            var enabled = this.chkDimInactiveWindow.Checked;
+            this.lblInactiveOpacity.Enabled = enabled;
+            this.udInactiveOpacity.Enabled = enabled;
+            this.lblOpacityPercent.Enabled = enabled;
+            this.lblInactiveKeyOpacity.Enabled = enabled;
+            this.udInactiveKeyOpacity.Enabled = enabled;
+            this.lblKeyOpacityPercent.Enabled = enabled;
+            this.lblKeyPressOpacity.Enabled = enabled;
+            this.rdbPressedKeyOpaque.Enabled = enabled;
+            this.rdbAllKeysOpaque.Enabled = enabled;
         }
     }
 }

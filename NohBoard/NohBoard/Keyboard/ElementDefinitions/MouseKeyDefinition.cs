@@ -74,6 +74,15 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
         /// <param name="capsLock">A value indicating whether caps lock is pressed during the render.</param>
         public void Render(Graphics g, float pressedOpacity, bool shift, bool capsLock)
         {
+            this.RenderKeyCap(g, pressedOpacity, shift, capsLock);
+            this.RenderText(g, pressedOpacity, shift, capsLock);
+        }
+
+        /// <summary>
+        /// Renders the mouse-button background and outline without its label.
+        /// </summary>
+        public void RenderKeyCap(Graphics g, float pressedOpacity, bool shift, bool capsLock)
+        {
             pressedOpacity = Math.Max(0, Math.Min(1, pressedOpacity));
             var pressed = pressedOpacity > 0;
             var opacity = pressed ? pressedOpacity : 1;
@@ -81,11 +90,6 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
                             ?? GlobalSettings.CurrentStyle.DefaultKeyStyle;
             var defaultStyle = GlobalSettings.CurrentStyle.DefaultKeyStyle;
             var subStyle = pressed ? style?.Pressed ?? defaultStyle.Pressed : style?.Loose ?? defaultStyle.Loose;
-
-            var txtSize = g.MeasureString(this.Text, subStyle.Font);
-            var txtPoint = new TPoint(
-                this.TextPosition.X - (int)(txtSize.Width / 2),
-                this.TextPosition.Y - (int)(txtSize.Height / 2));
 
             // Draw the background
             var fadingBrush = pressed && opacity < 1;
@@ -95,16 +99,35 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
             g.FillPolygon(backgroundBrush, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
             if (fadingBrush) backgroundBrush.Dispose();
 
-            // Draw the text
-            g.SetClip(this.GetBoundingBox());
-            using (var textBrush = new SolidBrush(WithOpacity(subStyle.Text, opacity)))
-                g.DrawString(this.Text, subStyle.Font, textBrush, (Point)txtPoint);
-            g.ResetClip();
-
             // Draw the outline.
             if (subStyle.ShowOutline)
                 using (var outlinePen = new Pen(WithOpacity(subStyle.Outline, opacity), subStyle.OutlineWidth))
                     g.DrawPolygon(outlinePen, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
+        }
+
+        /// <summary>
+        /// Renders the mouse-button label at full opacity so it remains readable throughout a keypress fade.
+        /// </summary>
+        public void RenderText(Graphics g, float pressedOpacity, bool shift, bool capsLock, Color? colorOverride = null)
+        {
+            pressedOpacity = Math.Max(0, Math.Min(1, pressedOpacity));
+            var pressed = pressedOpacity > 0;
+            var style = GlobalSettings.CurrentStyle.TryGetElementStyle<KeyStyle>(this.Id)
+                            ?? GlobalSettings.CurrentStyle.DefaultKeyStyle;
+            var defaultStyle = GlobalSettings.CurrentStyle.DefaultKeyStyle;
+            var subStyle = pressed ? style?.Pressed ?? defaultStyle.Pressed : style?.Loose ?? defaultStyle.Loose;
+            using (var displayFont = GetDisplayFont(subStyle.Font))
+            using (var textBrush = new SolidBrush(colorOverride ?? WithOpacity(subStyle.Text, 1)))
+            {
+                var txtSize = g.MeasureString(this.Text, displayFont);
+                var txtPoint = new PointF(
+                    this.TextPosition.X - txtSize.Width / 2,
+                    this.TextPosition.Y - txtSize.Height / 2);
+
+                g.SetClip(this.GetBoundingBox());
+                g.DrawString(this.Text, displayFont, textBrush, txtPoint);
+                g.ResetClip();
+            }
         }
 
         /// <summary>

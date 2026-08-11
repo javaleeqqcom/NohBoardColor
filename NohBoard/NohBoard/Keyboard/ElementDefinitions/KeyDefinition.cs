@@ -422,6 +422,18 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
         }
 
         /// <summary>
+        /// Creates the display font after applying the global teaching-view scale percentage.
+        /// </summary>
+        protected static Font GetDisplayFont(SerializableFont font)
+        {
+            var scale = GlobalSettings.Settings?.KeyFontScalePercent ?? 100;
+            return new Font(
+                new FontFamily(font.UsedFontFamily),
+                font.Size * scale / 100F,
+                (FontStyle)font.Style);
+        }
+
+        /// <summary>
         /// Returns the bounding box of this element.
         /// </summary>
         /// <returns>A rectangle representing the bounding box of the element.</returns>

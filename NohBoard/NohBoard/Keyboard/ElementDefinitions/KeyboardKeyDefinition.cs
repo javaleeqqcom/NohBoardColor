@@ -83,9 +83,9 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
         /// <param name="pressed">A value indicating whether to render the key in its pressed state or not.</param>
         /// <param name="shift">A value indicating whether shift is pressed during the render.</param>
         /// <param name="capsLock">A value indicating whether caps lock is pressed during the render.</param>
-        public void Render(Graphics g, bool pressed, bool shift, bool capsLock)
+        public void Render(Graphics g, bool pressed, bool shift, bool capsLock, bool shiftedAtPress = false)
         {
-            this.Render(g, pressed ? 1 : 0, shift, capsLock);
+            this.Render(g, pressed ? 1 : 0, shift, capsLock, pressed, shiftedAtPress);
         }
 
         /// <summary>
@@ -95,7 +95,22 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
         /// <param name="pressedOpacity">The opacity of the pressed state from zero to one.</param>
         /// <param name="shift">A value indicating whether shift is pressed during the render.</param>
         /// <param name="capsLock">A value indicating whether caps lock is pressed during the render.</param>
-        public void Render(Graphics g, float pressedOpacity, bool shift, bool capsLock)
+        public void Render(
+            Graphics g,
+            float pressedOpacity,
+            bool shift,
+            bool capsLock,
+            bool keyActive = false,
+            bool shiftedAtPress = false)
+        {
+            this.RenderKeyCap(g, pressedOpacity, shift, capsLock);
+            this.RenderText(g, pressedOpacity, shift, capsLock, null, keyActive, shiftedAtPress);
+        }
+
+        /// <summary>
+        /// Renders the key-cap background and outline without its label.
+        /// </summary>
+        public void RenderKeyCap(Graphics g, float pressedOpacity, bool shift, bool capsLock)
         {
             pressedOpacity = Math.Max(0, Math.Min(1, pressedOpacity));
             var pressed = pressedOpacity > 0;
@@ -105,11 +120,6 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
             var defaultStyle = GlobalSettings.CurrentStyle.DefaultKeyStyle;
             var subStyle = pressed ? style?.Pressed ?? defaultStyle.Pressed : style?.Loose ?? defaultStyle.Loose;
 
-            var txtSize = g.MeasureString(this.GetText(shift, capsLock), subStyle.Font);
-            var txtPoint = new TPoint(
-                this.TextPosition.X - (int)(txtSize.Width / 2),
-                this.TextPosition.Y - (int)(txtSize.Height / 2));
-
             // Draw the background
             var fadingBrush = pressed && opacity < 1;
             var backgroundBrush = fadingBrush
@@ -118,16 +128,87 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
             g.FillPolygon(backgroundBrush, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
             if (fadingBrush) backgroundBrush.Dispose();
 
-            // Draw the text
-            g.SetClip(this.GetBoundingBox());
-            using (var textBrush = new SolidBrush(WithOpacity(subStyle.Text, opacity)))
-                g.DrawString(this.GetText(shift, capsLock), subStyle.Font, textBrush, (Point)txtPoint);
-            g.ResetClip();
-
             // Draw the outline.
             if (subStyle.ShowOutline)
                 using (var outlinePen = new Pen(WithOpacity(subStyle.Outline, opacity), subStyle.OutlineWidth))
                     g.DrawPolygon(outlinePen, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
+        }
+
+        /// <summary>
+        /// Renders the key label at full opacity so it remains readable throughout a keypress fade.
+        /// </summary>
+        public void RenderText(
+            Graphics g,
+            float pressedOpacity,
+            bool shift,
+            bool capsLock,
+            Color? colorOverride = null,
+            bool keyActive = false,
+            bool shiftedAtPress = false)
+        {
+            pressedOpacity = Math.Max(0, Math.Min(1, pressedOpacity));
+            var pressed = pressedOpacity > 0;
+            var style = GlobalSettings.CurrentStyle.TryGetElementStyle<KeyStyle>(this.Id)
+                            ?? GlobalSettings.CurrentStyle.DefaultKeyStyle;
+            var defaultStyle = GlobalSettings.CurrentStyle.DefaultKeyStyle;
+            var subStyle = pressed ? style?.Pressed ?? defaultStyle.Pressed : style?.Loose ?? defaultStyle.Loose;
+            using (var displayFont = GetDisplayFont(subStyle.Font))
+            using (var textBrush = new SolidBrush(colorOverride ?? WithOpacity(subStyle.Text, 1)))
+            {
+                var boundingBox = this.GetBoundingBox();
+                var useKeyboardKeyCapLayout = GlobalSettings.Settings.DualStateKeyLabels
+                    == DualStateLabelMode.KeyboardKeyCaps;
+                var splitNonLetterLabels = useKeyboardKeyCapLayout
+                    && !this.IsEnglishLetterPair()
+                    && !string.Equals(this.Text, this.ShiftText, StringComparison.Ordinal);
+                var stateOffset = splitNonLetterLabels
+                    ? Math.Max(3, Math.Min(boundingBox.Width, boundingBox.Height) / 8)
+                    : 0;
+
+                g.SetClip(boundingBox);
+                if (splitNonLetterLabels)
+                {
+                    using (var normalStateFont = new Font(
+                        displayFont.FontFamily,
+                        Math.Max(6F, displayFont.Size * 0.7F),
+                        displayFont.Style))
+                    {
+                        // Idle keys show both states. Active keys keep only the state captured when the key was
+                        // pressed, but it stays in the same place so the Shift state remains visually explicit.
+                        if (!keyActive || shiftedAtPress)
+                        {
+                            var shiftStateSize = g.MeasureString(this.ShiftText, displayFont);
+                            var shiftStatePoint = new PointF(
+                                this.TextPosition.X + stateOffset - shiftStateSize.Width / 2,
+                                this.TextPosition.Y - stateOffset - shiftStateSize.Height / 2);
+                            g.DrawString(this.ShiftText, displayFont, textBrush, shiftStatePoint);
+                        }
+
+                        if (!keyActive || !shiftedAtPress)
+                        {
+                            var normalStateSize = g.MeasureString(this.Text, normalStateFont);
+                            var normalStatePoint = new PointF(
+                                this.TextPosition.X - stateOffset - normalStateSize.Width / 2,
+                                this.TextPosition.Y + stateOffset - normalStateSize.Height / 2);
+                            g.DrawString(this.Text, normalStateFont, textBrush, normalStatePoint);
+                        }
+                    }
+                }
+                else
+                {
+                    // The physical-key-cap mode captures Shift at key-down. The original mode continues to follow
+                    // the current Shift state, except for the retained Shift state supplied by the caller.
+                    var useShiftText = useKeyboardKeyCapLayout && keyActive ? shiftedAtPress : shift;
+                    var text = this.GetText(useShiftText, capsLock);
+                    var txtSize = g.MeasureString(text, displayFont);
+                    var txtPoint = new PointF(
+                        this.TextPosition.X - txtSize.Width / 2,
+                        this.TextPosition.Y - txtSize.Height / 2);
+                    g.DrawString(text, displayFont, textBrush, txtPoint);
+                }
+
+                g.ResetClip();
+            }
         }
 
         /// <summary>
@@ -392,6 +473,18 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
 
             var capitalize = this.ChangeOnCaps && (capsLock ^ shift) || !this.ChangeOnCaps && shift;
             return capitalize ? this.ShiftText : this.Text;
+        }
+
+        /// <summary>
+        /// Returns whether the normal and shifted labels form a lowercase/uppercase English letter pair.
+        /// </summary>
+        private bool IsEnglishLetterPair()
+        {
+            return this.Text?.Length == 1
+                && this.ShiftText?.Length == 1
+                && this.Text[0] >= 'a'
+                && this.Text[0] <= 'z'
+                && this.ShiftText[0] == char.ToUpperInvariant(this.Text[0]);
         }
 
         /// <summary>

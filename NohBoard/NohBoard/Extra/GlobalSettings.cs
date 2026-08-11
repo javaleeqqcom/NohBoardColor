@@ -39,6 +39,26 @@ namespace ThoNohT.NohBoard.Extra
         private int? updateInterval;
 
         /// <summary>
+        /// Field for <see cref="InactiveOpacityPercent"/>.
+        /// </summary>
+        private int? inactiveOpacityPercent;
+
+        /// <summary>
+        /// Field for <see cref="InactiveKeyOpacityPercent"/>.
+        /// </summary>
+        private int? inactiveKeyOpacityPercent;
+
+        /// <summary>
+        /// Field for <see cref="KeyFontScalePercent"/>.
+        /// </summary>
+        private int? keyFontScalePercent;
+
+        /// <summary>
+        /// Field for <see cref="DualStateKeyLabels"/>.
+        /// </summary>
+        private DualStateLabelMode? dualStateKeyLabels;
+
+        /// <summary>
         /// Indicates whether there were changes made to the definition since the last save or load action.
         /// Changes are tracked when undo history is pushed, and reset when a keyboard is loaded or saved.
         /// </summary>
@@ -83,6 +103,70 @@ namespace ThoNohT.NohBoard.Extra
         /// </summary>
         [DataMember]
         public string WindowTitle { get; set; } = "";
+
+        /// <summary>
+        /// The scale percentage applied to all key-label fonts.
+        /// </summary>
+        [DataMember]
+        public int KeyFontScalePercent
+        {
+            get => this.keyFontScalePercent ?? 130;
+            set => this.keyFontScalePercent = Math.Max(100, Math.Min(300, value));
+        }
+
+        /// <summary>
+        /// Gets or sets how keys with separate normal and Shift labels are displayed.
+        /// </summary>
+        [DataMember]
+        public DualStateLabelMode DualStateKeyLabels
+        {
+            get => this.dualStateKeyLabels ?? DualStateLabelMode.KeyboardKeyCaps;
+            set => this.dualStateKeyLabels = Enum.IsDefined(typeof(DualStateLabelMode), value)
+                ? value
+                : DualStateLabelMode.KeyboardKeyCaps;
+        }
+
+        /// <summary>
+        /// Whether the keyboard window stays above other windows.
+        /// </summary>
+        [DataMember]
+        public bool AlwaysOnTop { get; set; }
+
+        /// <summary>
+        /// Whether the keyboard window becomes translucent and hides its title bar while the mouse is away.
+        /// </summary>
+        [DataMember]
+        public bool DimInactiveWindow { get; set; }
+
+        /// <summary>
+        /// The keyboard background opacity percentage used while the mouse is away from the keyboard window.
+        /// This keeps the original serialized property name for compatibility with settings written by development
+        /// builds that exposed a single inactive opacity value.
+        /// </summary>
+        [DataMember]
+        public int InactiveOpacityPercent
+        {
+            get => this.inactiveOpacityPercent ?? 40;
+            set => this.inactiveOpacityPercent = Math.Max(20, Math.Min(100, value));
+        }
+
+        /// <summary>
+        /// The key-cap opacity percentage used while the mouse is away from the keyboard window. Key labels are always
+        /// rendered fully opaque for readability.
+        /// </summary>
+        [DataMember]
+        public int InactiveKeyOpacityPercent
+        {
+            get => this.inactiveKeyOpacityPercent ?? 75;
+            set => this.inactiveKeyOpacityPercent = Math.Max(20, Math.Min(100, value));
+        }
+
+        /// <summary>
+        /// Whether the entire keyboard becomes opaque while a key is physically held. When false, only held keys are
+        /// rendered in a separate opaque overlay.
+        /// </summary>
+        [DataMember]
+        public bool MakeAllKeysOpaqueOnPress { get; set; }
 
         #endregion General
 

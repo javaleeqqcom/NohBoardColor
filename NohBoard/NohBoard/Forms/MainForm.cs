@@ -70,6 +70,7 @@ namespace ThoNohT.NohBoard.Forms
         public MainForm()
         {
             this.InitializeComponent();
+            this.InitializeAppearanceControls();
             this.SetStyle(ControlStyles.ResizeRedraw, true);
         }
 
@@ -425,7 +426,10 @@ namespace ThoNohT.NohBoard.Forms
         /// </summary>
         private void MainForm_Move(object sender, EventArgs e)
         {
-            if (GlobalSettings.Settings != null && this.WindowState == FormWindowState.Normal)
+            if (GlobalSettings.Settings != null
+                && this.WindowState == FormWindowState.Normal
+                && !this.renderInactiveBackgroundOnly
+                && !this.changingWindowFrame)
             {
                 GlobalSettings.Settings.X = this.Location.X;
                 GlobalSettings.Settings.Y = this.Location.Y;
@@ -454,6 +458,7 @@ namespace ThoNohT.NohBoard.Forms
 
             HookManager.DisableMouseHook();
             HookManager.DisableKeyboardHook();
+            this.DisposeAppearanceControls();
 
             GlobalSettings.Save();
         }
@@ -473,6 +478,8 @@ namespace ThoNohT.NohBoard.Forms
 
             var title = GlobalSettings.Settings.WindowTitle;
             this.Text = string.IsNullOrWhiteSpace(title) ? $"NohBoard {Version.Get}" : title;
+
+            this.ApplyAppearanceSettings();
 
             this.LoadKeyboard();
         }
@@ -595,6 +602,21 @@ namespace ThoNohT.NohBoard.Forms
             if (GlobalSettings.CurrentDefinition == null || !this.backBrushes.Any())
                 return;
 
+            // While the mouse is away, the main form is the independently translucent background layer. Key caps
+            // and their fully opaque labels are rendered in separate click-through overlay windows.
+            if (this.renderInactiveBackgroundOnly)
+            {
+                var style = GlobalSettings.CurrentStyle;
+                if (style.BackgroundImageFileName != null
+                    && FileHelper.StyleImageExists(style.BackgroundImageFileName))
+                {
+                    e.Graphics.DrawImage(ImageCache.Get(style.BackgroundImageFileName), this.ClientRectangle);
+                }
+
+                base.OnPaint(e);
+                return;
+            }
+
             // Fill the appropriate back brush.
             e.Graphics.FillRectangle(
                 this.backBrushes[KeyboardState.ShiftDown][KeyboardState.CapsActive],
@@ -678,7 +700,29 @@ namespace ThoNohT.NohBoard.Forms
 
                 if (!pressed && !alwaysRender) return;
 
-                kkDef.Render(g, pressedOpacity, KeyboardState.ShiftDown, KeyboardState.CapsActive);
+                var shiftedAtPress = this.WasPressedWithShift(kkDef);
+                var retainedShiftState = !KeyboardState.ShiftDown && shiftedAtPress;
+                var keyboardKeyCapLayout = GlobalSettings.Settings.DualStateKeyLabels
+                    == DualStateLabelMode.KeyboardKeyCaps;
+                if (retainedShiftState || keyboardKeyCapLayout && pressed)
+                {
+                    // The cached background contains idle labels. Cover them with a complete loose key cap before
+                    // rendering an active key: the physical-key-cap mode must show only the state captured at
+                    // key-down, while the original mode needs this only for a retained Shift state.
+                    kkDef.RenderKeyCap(
+                        g,
+                        0,
+                        false,
+                        KeyboardState.CapsActive);
+                }
+
+                kkDef.Render(
+                    g,
+                    pressedOpacity,
+                    KeyboardState.ShiftDown || retainedShiftState,
+                    KeyboardState.CapsActive,
+                    pressed,
+                    shiftedAtPress);
             }
             if (def is MouseKeyDefinition mkDef)
             {
@@ -710,7 +754,9 @@ namespace ThoNohT.NohBoard.Forms
         /// </summary>
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
-            if (KeyboardState.Updated || MouseState.Updated)
+            var stateUpdated = KeyboardState.Updated | MouseState.Updated;
+            var appearanceUpdated = this.UpdateWindowAppearance();
+            if (stateUpdated || appearanceUpdated)
                 this.Refresh();
         }
 

@@ -75,6 +75,23 @@ namespace ThoNohT.NohBoard.Forms
             this.GeneralGroup = new System.Windows.Forms.GroupBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.txtTitle = new System.Windows.Forms.TextBox();
+            this.lblKeyFontScale = new System.Windows.Forms.Label();
+            this.udKeyFontScale = new System.Windows.Forms.NumericUpDown();
+            this.lblKeyFontScalePercent = new System.Windows.Forms.Label();
+            this.keyLabelModeGroup = new System.Windows.Forms.GroupBox();
+            this.rdbKeyboardKeyCaps = new System.Windows.Forms.RadioButton();
+            this.rdbOriginalKeyLabels = new System.Windows.Forms.RadioButton();
+            this.windowAppearanceGroup = new System.Windows.Forms.GroupBox();
+            this.chkDimInactiveWindow = new System.Windows.Forms.CheckBox();
+            this.lblInactiveOpacity = new System.Windows.Forms.Label();
+            this.udInactiveOpacity = new System.Windows.Forms.NumericUpDown();
+            this.lblOpacityPercent = new System.Windows.Forms.Label();
+            this.lblInactiveKeyOpacity = new System.Windows.Forms.Label();
+            this.udInactiveKeyOpacity = new System.Windows.Forms.NumericUpDown();
+            this.lblKeyOpacityPercent = new System.Windows.Forms.Label();
+            this.lblKeyPressOpacity = new System.Windows.Forms.Label();
+            this.rdbPressedKeyOpaque = new System.Windows.Forms.RadioButton();
+            this.rdbAllKeysOpaque = new System.Windows.Forms.RadioButton();
             this.TrapGroup.SuspendLayout();
             this.InputGroup.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udPressHold)).BeginInit();
@@ -82,6 +99,11 @@ namespace ThoNohT.NohBoard.Forms
             ((System.ComponentModel.ISupportInitialize)(this.udMouseSensitivity)).BeginInit();
             this.CapitalizationGroup.SuspendLayout();
             this.GeneralGroup.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udKeyFontScale)).BeginInit();
+            this.keyLabelModeGroup.SuspendLayout();
+            this.windowAppearanceGroup.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udInactiveOpacity)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udInactiveKeyOpacity)).BeginInit();
             this.SuspendLayout();
             // 
             // TrapGroup
@@ -91,7 +113,7 @@ namespace ThoNohT.NohBoard.Forms
             this.TrapGroup.Controls.Add(this.chkTrapKeyboard);
             this.TrapGroup.Controls.Add(this.chkTrapMouse);
             this.TrapGroup.Controls.Add(this.lblTrapping);
-            this.TrapGroup.Location = new System.Drawing.Point(206, 68);
+            this.TrapGroup.Location = new System.Drawing.Point(206, 96);
             this.TrapGroup.Name = "TrapGroup";
             this.TrapGroup.Size = new System.Drawing.Size(203, 136);
             this.TrapGroup.TabIndex = 1;
@@ -283,7 +305,7 @@ namespace ThoNohT.NohBoard.Forms
             // 
             // OkButton
             // 
-            this.OkButton.Location = new System.Drawing.Point(334, 306);
+            this.OkButton.Location = new System.Drawing.Point(334, 547);
             this.OkButton.Name = "OkButton";
             this.OkButton.Size = new System.Drawing.Size(75, 23);
             this.OkButton.TabIndex = 7;
@@ -294,7 +316,7 @@ namespace ThoNohT.NohBoard.Forms
             // CancelButton2
             // 
             this.CancelButton2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CancelButton2.Location = new System.Drawing.Point(253, 306);
+            this.CancelButton2.Location = new System.Drawing.Point(253, 547);
             this.CancelButton2.Name = "CancelButton2";
             this.CancelButton2.Size = new System.Drawing.Size(75, 23);
             this.CancelButton2.TabIndex = 6;
@@ -309,7 +331,7 @@ namespace ThoNohT.NohBoard.Forms
             this.CapitalizationGroup.Controls.Add(this.rdbAlwaysLower);
             this.CapitalizationGroup.Controls.Add(this.rdbAlwaysCaps);
             this.CapitalizationGroup.Controls.Add(this.rdbFollowKeystate);
-            this.CapitalizationGroup.Location = new System.Drawing.Point(10, 210);
+            this.CapitalizationGroup.Location = new System.Drawing.Point(10, 238);
             this.CapitalizationGroup.Name = "CapitalizationGroup";
             this.CapitalizationGroup.Size = new System.Drawing.Size(396, 91);
             this.CapitalizationGroup.TabIndex = 8;
@@ -383,9 +405,12 @@ namespace ThoNohT.NohBoard.Forms
             // 
             this.GeneralGroup.Controls.Add(this.lblTitle);
             this.GeneralGroup.Controls.Add(this.txtTitle);
+            this.GeneralGroup.Controls.Add(this.lblKeyFontScale);
+            this.GeneralGroup.Controls.Add(this.udKeyFontScale);
+            this.GeneralGroup.Controls.Add(this.lblKeyFontScalePercent);
             this.GeneralGroup.Location = new System.Drawing.Point(206, 12);
             this.GeneralGroup.Name = "GeneralGroup";
-            this.GeneralGroup.Size = new System.Drawing.Size(203, 50);
+            this.GeneralGroup.Size = new System.Drawing.Size(203, 78);
             this.GeneralGroup.TabIndex = 9;
             this.GeneralGroup.TabStop = false;
             this.GeneralGroup.Text = "General";
@@ -405,6 +430,184 @@ namespace ThoNohT.NohBoard.Forms
             this.txtTitle.Name = "txtTitle";
             this.txtTitle.Size = new System.Drawing.Size(92, 20);
             this.txtTitle.TabIndex = 0;
+            //
+            // lblKeyFontScale
+            //
+            this.lblKeyFontScale.AutoSize = true;
+            this.lblKeyFontScale.Location = new System.Drawing.Point(7, 50);
+            this.lblKeyFontScale.Name = "lblKeyFontScale";
+            this.lblKeyFontScale.Size = new System.Drawing.Size(84, 13);
+            this.lblKeyFontScale.TabIndex = 2;
+            this.lblKeyFontScale.Text = "Key label scale:";
+            //
+            // udKeyFontScale
+            //
+            this.udKeyFontScale.Location = new System.Drawing.Point(102, 47);
+            this.udKeyFontScale.Maximum = new decimal(new int[] { 300, 0, 0, 0 });
+            this.udKeyFontScale.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
+            this.udKeyFontScale.Name = "udKeyFontScale";
+            this.udKeyFontScale.Size = new System.Drawing.Size(58, 20);
+            this.udKeyFontScale.TabIndex = 3;
+            this.udKeyFontScale.Value = new decimal(new int[] { 130, 0, 0, 0 });
+            //
+            // lblKeyFontScalePercent
+            //
+            this.lblKeyFontScalePercent.AutoSize = true;
+            this.lblKeyFontScalePercent.Location = new System.Drawing.Point(166, 50);
+            this.lblKeyFontScalePercent.Name = "lblKeyFontScalePercent";
+            this.lblKeyFontScalePercent.Size = new System.Drawing.Size(15, 13);
+            this.lblKeyFontScalePercent.TabIndex = 4;
+            this.lblKeyFontScalePercent.Text = "%";
+            //
+            // keyLabelModeGroup
+            //
+            this.keyLabelModeGroup.Controls.Add(this.rdbKeyboardKeyCaps);
+            this.keyLabelModeGroup.Controls.Add(this.rdbOriginalKeyLabels);
+            this.keyLabelModeGroup.Location = new System.Drawing.Point(10, 335);
+            this.keyLabelModeGroup.Name = "keyLabelModeGroup";
+            this.keyLabelModeGroup.Size = new System.Drawing.Size(399, 64);
+            this.keyLabelModeGroup.TabIndex = 10;
+            this.keyLabelModeGroup.TabStop = false;
+            this.keyLabelModeGroup.Text = "Dual-state key labels";
+            //
+            // rdbKeyboardKeyCaps
+            //
+            this.rdbKeyboardKeyCaps.AutoSize = true;
+            this.rdbKeyboardKeyCaps.Location = new System.Drawing.Point(10, 19);
+            this.rdbKeyboardKeyCaps.Name = "rdbKeyboardKeyCaps";
+            this.rdbKeyboardKeyCaps.Size = new System.Drawing.Size(275, 17);
+            this.rdbKeyboardKeyCaps.TabIndex = 0;
+            this.rdbKeyboardKeyCaps.TabStop = true;
+            this.rdbKeyboardKeyCaps.Text = "Keyboard key caps (show both labels when idle)";
+            this.rdbKeyboardKeyCaps.UseVisualStyleBackColor = true;
+            //
+            // rdbOriginalKeyLabels
+            //
+            this.rdbOriginalKeyLabels.AutoSize = true;
+            this.rdbOriginalKeyLabels.Location = new System.Drawing.Point(10, 42);
+            this.rdbOriginalKeyLabels.Name = "rdbOriginalKeyLabels";
+            this.rdbOriginalKeyLabels.Size = new System.Drawing.Size(246, 17);
+            this.rdbOriginalKeyLabels.TabIndex = 1;
+            this.rdbOriginalKeyLabels.TabStop = true;
+            this.rdbOriginalKeyLabels.Text = "Original NohBoard (single centered label)";
+            this.rdbOriginalKeyLabels.UseVisualStyleBackColor = true;
+            //
+            // windowAppearanceGroup
+            //
+            this.windowAppearanceGroup.Controls.Add(this.chkDimInactiveWindow);
+            this.windowAppearanceGroup.Controls.Add(this.lblInactiveOpacity);
+            this.windowAppearanceGroup.Controls.Add(this.udInactiveOpacity);
+            this.windowAppearanceGroup.Controls.Add(this.lblOpacityPercent);
+            this.windowAppearanceGroup.Controls.Add(this.lblInactiveKeyOpacity);
+            this.windowAppearanceGroup.Controls.Add(this.udInactiveKeyOpacity);
+            this.windowAppearanceGroup.Controls.Add(this.lblKeyOpacityPercent);
+            this.windowAppearanceGroup.Controls.Add(this.lblKeyPressOpacity);
+            this.windowAppearanceGroup.Controls.Add(this.rdbPressedKeyOpaque);
+            this.windowAppearanceGroup.Controls.Add(this.rdbAllKeysOpaque);
+            this.windowAppearanceGroup.Location = new System.Drawing.Point(10, 405);
+            this.windowAppearanceGroup.Name = "windowAppearanceGroup";
+            this.windowAppearanceGroup.Size = new System.Drawing.Size(399, 134);
+            this.windowAppearanceGroup.TabIndex = 11;
+            this.windowAppearanceGroup.TabStop = false;
+            this.windowAppearanceGroup.Text = "Inactive Window Appearance";
+            //
+            // chkDimInactiveWindow
+            //
+            this.chkDimInactiveWindow.AutoSize = true;
+            this.chkDimInactiveWindow.Location = new System.Drawing.Point(10, 20);
+            this.chkDimInactiveWindow.Name = "chkDimInactiveWindow";
+            this.chkDimInactiveWindow.Size = new System.Drawing.Size(298, 17);
+            this.chkDimInactiveWindow.TabIndex = 0;
+            this.chkDimInactiveWindow.Text = "Dim window and hide title bar when the mouse is away";
+            this.chkDimInactiveWindow.UseVisualStyleBackColor = true;
+            this.chkDimInactiveWindow.CheckedChanged += new System.EventHandler(this.chkDimInactiveWindow_CheckedChanged);
+            //
+            // lblInactiveOpacity
+            //
+            this.lblInactiveOpacity.AutoSize = true;
+            this.lblInactiveOpacity.Location = new System.Drawing.Point(10, 50);
+            this.lblInactiveOpacity.Name = "lblInactiveOpacity";
+            this.lblInactiveOpacity.Size = new System.Drawing.Size(107, 13);
+            this.lblInactiveOpacity.TabIndex = 1;
+            this.lblInactiveOpacity.Text = "Background opacity:";
+            //
+            // udInactiveOpacity
+            //
+            this.udInactiveOpacity.Location = new System.Drawing.Point(124, 47);
+            this.udInactiveOpacity.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
+            this.udInactiveOpacity.Minimum = new decimal(new int[] { 20, 0, 0, 0 });
+            this.udInactiveOpacity.Name = "udInactiveOpacity";
+            this.udInactiveOpacity.Size = new System.Drawing.Size(56, 20);
+            this.udInactiveOpacity.TabIndex = 2;
+            this.udInactiveOpacity.Value = new decimal(new int[] { 40, 0, 0, 0 });
+            //
+            // lblOpacityPercent
+            //
+            this.lblOpacityPercent.AutoSize = true;
+            this.lblOpacityPercent.Location = new System.Drawing.Point(186, 50);
+            this.lblOpacityPercent.Name = "lblOpacityPercent";
+            this.lblOpacityPercent.Size = new System.Drawing.Size(15, 13);
+            this.lblOpacityPercent.TabIndex = 3;
+            this.lblOpacityPercent.Text = "%";
+            //
+            // lblInactiveKeyOpacity
+            //
+            this.lblInactiveKeyOpacity.AutoSize = true;
+            this.lblInactiveKeyOpacity.Location = new System.Drawing.Point(10, 76);
+            this.lblInactiveKeyOpacity.Name = "lblInactiveKeyOpacity";
+            this.lblInactiveKeyOpacity.Size = new System.Drawing.Size(86, 13);
+            this.lblInactiveKeyOpacity.TabIndex = 4;
+            this.lblInactiveKeyOpacity.Text = "Key-cap opacity:";
+            //
+            // udInactiveKeyOpacity
+            //
+            this.udInactiveKeyOpacity.Location = new System.Drawing.Point(124, 73);
+            this.udInactiveKeyOpacity.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
+            this.udInactiveKeyOpacity.Minimum = new decimal(new int[] { 20, 0, 0, 0 });
+            this.udInactiveKeyOpacity.Name = "udInactiveKeyOpacity";
+            this.udInactiveKeyOpacity.Size = new System.Drawing.Size(56, 20);
+            this.udInactiveKeyOpacity.TabIndex = 5;
+            this.udInactiveKeyOpacity.Value = new decimal(new int[] { 75, 0, 0, 0 });
+            //
+            // lblKeyOpacityPercent
+            //
+            this.lblKeyOpacityPercent.AutoSize = true;
+            this.lblKeyOpacityPercent.Location = new System.Drawing.Point(186, 76);
+            this.lblKeyOpacityPercent.Name = "lblKeyOpacityPercent";
+            this.lblKeyOpacityPercent.Size = new System.Drawing.Size(15, 13);
+            this.lblKeyOpacityPercent.TabIndex = 6;
+            this.lblKeyOpacityPercent.Text = "%";
+            //
+            // lblKeyPressOpacity
+            //
+            this.lblKeyPressOpacity.AutoSize = true;
+            this.lblKeyPressOpacity.Location = new System.Drawing.Point(10, 106);
+            this.lblKeyPressOpacity.Name = "lblKeyPressOpacity";
+            this.lblKeyPressOpacity.Size = new System.Drawing.Size(120, 13);
+            this.lblKeyPressOpacity.TabIndex = 7;
+            this.lblKeyPressOpacity.Text = "While a key is pressed:";
+            //
+            // rdbPressedKeyOpaque
+            //
+            this.rdbPressedKeyOpaque.AutoSize = true;
+            this.rdbPressedKeyOpaque.Location = new System.Drawing.Point(136, 104);
+            this.rdbPressedKeyOpaque.Name = "rdbPressedKeyOpaque";
+            this.rdbPressedKeyOpaque.Size = new System.Drawing.Size(107, 17);
+            this.rdbPressedKeyOpaque.TabIndex = 8;
+            this.rdbPressedKeyOpaque.TabStop = true;
+            this.rdbPressedKeyOpaque.Text = "Pressed key only";
+            this.rdbPressedKeyOpaque.UseVisualStyleBackColor = true;
+            //
+            // rdbAllKeysOpaque
+            //
+            this.rdbAllKeysOpaque.AutoSize = true;
+            this.rdbAllKeysOpaque.Location = new System.Drawing.Point(252, 104);
+            this.rdbAllKeysOpaque.Name = "rdbAllKeysOpaque";
+            this.rdbAllKeysOpaque.Size = new System.Drawing.Size(75, 17);
+            this.rdbAllKeysOpaque.TabIndex = 9;
+            this.rdbAllKeysOpaque.TabStop = true;
+            this.rdbAllKeysOpaque.Text = "All buttons";
+            this.rdbAllKeysOpaque.UseVisualStyleBackColor = true;
             // 
             // SettingsForm
             // 
@@ -412,7 +615,9 @@ namespace ThoNohT.NohBoard.Forms
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.CancelButton2;
-            this.ClientSize = new System.Drawing.Size(422, 342);
+            this.ClientSize = new System.Drawing.Size(422, 580);
+            this.Controls.Add(this.keyLabelModeGroup);
+            this.Controls.Add(this.windowAppearanceGroup);
             this.Controls.Add(this.GeneralGroup);
             this.Controls.Add(this.CapitalizationGroup);
             this.Controls.Add(this.CancelButton2);
@@ -436,6 +641,13 @@ namespace ThoNohT.NohBoard.Forms
             this.CapitalizationGroup.PerformLayout();
             this.GeneralGroup.ResumeLayout(false);
             this.GeneralGroup.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udKeyFontScale)).EndInit();
+            this.keyLabelModeGroup.ResumeLayout(false);
+            this.keyLabelModeGroup.PerformLayout();
+            this.windowAppearanceGroup.ResumeLayout(false);
+            this.windowAppearanceGroup.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udInactiveOpacity)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udInactiveKeyOpacity)).EndInit();
             this.ResumeLayout(false);
 
         }

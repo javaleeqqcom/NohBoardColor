@@ -87,6 +87,18 @@ namespace ThoNohT.NohBoard.Hooking
         }
 
         /// <summary>
+        /// Returns the keys that are physically held, excluding keys retained only for their hold or fade effect.
+        /// </summary>
+        public static IReadOnlyList<T> ActiveKeys
+        {
+            get
+            {
+                lock (pressedKeys)
+                    return pressedKeys.Where(k => !k.Value.removed).Select(k => k.Key).ToList().AsReadOnly();
+            }
+        }
+
+        /// <summary>
         /// Checks all key holds, and any holds that are exceeded are removed from the pressed keys list.
         /// </summary>
         /// <param name="hold">The minimum time to hold keys.</param>

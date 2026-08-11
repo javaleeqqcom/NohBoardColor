@@ -60,30 +60,52 @@ namespace ThoNohT.NohBoard.Keyboard.ElementDefinitions
         /// <param name="scrollCount">The number of times the direction has been scrolled within the timeout.</param>
         public void Render(Graphics g, int scrollCount)
         {
+            this.RenderKeyCap(g, scrollCount);
+            this.RenderText(g, scrollCount);
+        }
+
+        /// <summary>
+        /// Renders the scroll-button background and outline without its label.
+        /// </summary>
+        public void RenderKeyCap(Graphics g, int scrollCount)
+        {
             var pressed = scrollCount > 0;
             var style = GlobalSettings.CurrentStyle.TryGetElementStyle<KeyStyle>(this.Id)
                             ?? GlobalSettings.CurrentStyle.DefaultKeyStyle;
             var defaultStyle = GlobalSettings.CurrentStyle.DefaultKeyStyle;
             var subStyle = pressed ? style?.Pressed ?? defaultStyle.Pressed : style?.Loose ?? defaultStyle.Loose;
 
-            var text = pressed ? scrollCount.ToString() : this.Text;
-            var txtSize = g.MeasureString(text, subStyle.Font);
-            var txtPoint = new TPoint(
-                this.TextPosition.X - (int)(txtSize.Width / 2),
-                this.TextPosition.Y - (int)(txtSize.Height / 2));
-
-            // Draw the background
             var backgroundBrush = this.GetBackgroundBrush(subStyle, pressed);
             g.FillPolygon(backgroundBrush, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
 
-            // Draw the text
-            g.SetClip(this.GetBoundingBox());
-            g.DrawString(text, subStyle.Font, new SolidBrush(subStyle.Text), (Point)txtPoint);
-            g.ResetClip();
-
-            // Draw the outline.
             if (subStyle.ShowOutline)
-                g.DrawPolygon(new Pen(subStyle.Outline, 1), this.Boundaries.ConvertAll<Point>(x => x).ToArray());
+                using (var outlinePen = new Pen(subStyle.Outline, subStyle.OutlineWidth))
+                    g.DrawPolygon(outlinePen, this.Boundaries.ConvertAll<Point>(x => x).ToArray());
+        }
+
+        /// <summary>
+        /// Renders the scroll-button label at full opacity.
+        /// </summary>
+        public void RenderText(Graphics g, int scrollCount, Color? colorOverride = null)
+        {
+            var pressed = scrollCount > 0;
+            var style = GlobalSettings.CurrentStyle.TryGetElementStyle<KeyStyle>(this.Id)
+                            ?? GlobalSettings.CurrentStyle.DefaultKeyStyle;
+            var defaultStyle = GlobalSettings.CurrentStyle.DefaultKeyStyle;
+            var subStyle = pressed ? style?.Pressed ?? defaultStyle.Pressed : style?.Loose ?? defaultStyle.Loose;
+            var text = pressed ? scrollCount.ToString() : this.Text;
+            using (var displayFont = GetDisplayFont(subStyle.Font))
+            using (var textBrush = new SolidBrush(colorOverride ?? WithOpacity(subStyle.Text, 1)))
+            {
+                var txtSize = g.MeasureString(text, displayFont);
+                var txtPoint = new PointF(
+                    this.TextPosition.X - txtSize.Width / 2,
+                    this.TextPosition.Y - txtSize.Height / 2);
+
+                g.SetClip(this.GetBoundingBox());
+                g.DrawString(text, displayFont, textBrush, txtPoint);
+                g.ResetClip();
+            }
         }
 
         #region Transformations
